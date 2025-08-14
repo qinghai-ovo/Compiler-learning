@@ -43,7 +43,7 @@ and trans_exp ast env =
                                     vl1 / vl2
         (*ex1:「文」を「式」に埋め込む値構成子「StmtExp (文，式)」（「式」の値 を返す）を付加し，
         「文」の中で代入した変数を「式」で利用できる ようにしなさい．*)
-        |StmtExp (s1, e1) -> let env' = trans_stmt s1 env in
+        | StmtExp (s1, e1) -> let env' = trans_stmt s1 env in
                                 trans_exp e1 env'
 
 

@@ -8,7 +8,7 @@ and exp = Id of id
         | Minus of exp * exp
         | Times of exp * exp
         | Div of exp * exp
-        | StmtExp of stmt * exp
+        | StmtExp of stmt * exp (*stmt with exp*)
 
 exception No_such_symbol
 let e0 = fun _ -> raise No_such_symbol
@@ -23,12 +23,20 @@ let rec trans_stmt ast env =
                                        trans_stmt s2 env' 
         
         (*ex2:「StmtExp (文, 式)」の文の影響が，後続の文にも反映されるよう にしなさい．*)
-        (*if e = StmtExp *)
+        (*if e = StmtExp 
+        handle the special case first 
+        Make a new env' include any side effects from s
+        Evaluate e in new enviroment evn', result as vl
+        Update the variable var with the vaule vl  in env'
+        now the new enviroment include both the side effects from s and the var -> vl
+        *)
         | Assign (var, StmtExp(s,e)) -> 
                 let env' = trans_stmt s env in
                 let vl = trans_exp e env' in 
                 update var vl env' 
-        (*if  e != StmtExp*)
+        (*if  e != StmtExp
+        then handle the normal case
+        *)
         | Assign (var,e) -> let vl = trans_exp e env in
                                        update var vl env
         | Print e -> let vl = trans_exp e env in 
@@ -51,8 +59,11 @@ and trans_exp ast env =
                                     vl1 / vl2
         (*ex1:「文」を「式」に埋め込む値構成子「StmtExp (文，式)」（「式」の値 を返す）を付加し，
         「文」の中で代入した変数を「式」で利用できる ようにしなさい．*)
-        
-        |StmtExp (s1, e1) -> let env' = trans_stmt s1 env in
+        (* if ast is StmtExp(statment s1, expression e1),
+        Use trans_stmt function to translate expression statment s1 in enviroment, result as env'
+        Then use trans_exp function to translate expression e1 in evn', return the result
+        *)
+        | StmtExp (s1, e1) -> let env' = trans_stmt s1 env in
                                 trans_exp e1 env'
 
 
