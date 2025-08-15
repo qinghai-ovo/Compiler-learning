@@ -225,6 +225,23 @@ and trans_exp ast nest env = match ast with
                                            ^ "\tcqto\n"
                                            ^ "\tidivq %rbx\n"
                                            ^ "\tpushq %rax\n"
+                  (* Prob6 *)
+                  | CallFunc ("^", [left; right]) ->
+                                            let loop_label = incLabel() in
+                                            let end_label = incLabel() in
+                                            trans_exp left nest env        (* exp the base  *)
+                                            ^ trans_exp right nest env     (* exp the exponent  *)
+                                            ^ "\tpopq %rsi\n"              (* pop exponent to %rsi (as counter)*)
+                                            ^ "\tpopq %rdi\n"              (* base pop to %rdi *)
+                                            ^ "\tmovq $1, %rax\n"          (* %rax initialize to 1 (save res to %rax) *)
+                                            ^ sprintf "L%d:\n" loop_label  (* start loop *)
+                                            ^ "\tcmpq $0, %rsi\n"          (* check if counter >= 0 *)
+                                            ^ sprintf "\tjle L%d\n" end_label (* if counter < 0 loop over *)
+                                            ^ "\timulq %rdi, %rax\n"       (* res = res * bnase *)
+                                            ^ "\tsubq $1, %rsi\n"          (* exponent-- *)
+                                            ^ sprintf "\tjmp L%d\n" loop_label (* back to loop start point *)
+                                            ^ sprintf "L%d:\n" end_label   (* loop end label *)
+                                            ^ "\tpushq %rax\n"             (* push final resault *)
                   (* 反転のコード *)
                   | CallFunc("!",  arg::_) -> 
                                              trans_exp arg nest env

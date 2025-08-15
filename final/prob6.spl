@@ -1,0 +1,12 @@
+{
+	int a, b, m, n, r; //test comment
+        sprint ("You must give 2 integers.\n");
+        sprint ("First integer(base): ");
+        scan  (a);
+        sprint ("Second integer(exponent): ");
+        scan (b);
+        m = a ^ b;
+        sprint ("Answer = ");
+        iprint (m) ;
+        sprint ("\n");
+}

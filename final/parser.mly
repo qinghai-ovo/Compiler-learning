@@ -9,13 +9,14 @@ open Ast
 %token <int> NUM
 %token <string> STR ID
 %token INT IF WHILE SPRINT IPRINT SCAN EQ NEQ GT LT GE LE ELSE RETURN NEW
-%token PLUS MINUS TIMES DIV MOD LB RB LS RS LP RP ASSIGN SEMI COMMA TYPE VOID (* prob3: ADD MOD*)
+%token PLUS MINUS TIMES DIV LB RB LS RS LP RP ASSIGN SEMI COMMA TYPE VOID MOD POWER (* prob3: ADD MOD*)(*prob6: ADD POWER*)
 %type <Ast.stmt> prog
 
 
 %nonassoc GT LT EQ NEQ GE LE
 %left PLUS MINUS         /* lowest precedence */
 %left TIMES DIV MOD      /* medium precedence */
+%right POWER             /*hight precedence*/
 %nonassoc UMINUS      /* highest precedence */
 
 
@@ -93,7 +94,8 @@ expr : NUM { IntExp $1  }
      | expr MINUS expr { CallFunc ("-", [$1; $3]) }
      | expr TIMES expr { CallFunc ("*", [$1; $3]) }
      | expr DIV expr { CallFunc ("/", [$1; $3]) }
-     | expr MOD expr { CallFunc ("-", [$1; CallFunc ("*", [CallFunc ("/", [$1; $3]); $3])])} (* prob3:expr mod*)
+     | expr MOD expr { CallFunc ("-", [$1; CallFunc ("*", [CallFunc ("/", [$1; $3]); $3])])} (* prob3:expr mod rule*)
+     | expr POWER expr { CallFunc ("^", [$1; $3]) }(*Prob6: add POWER expr rule*)
      | MINUS expr %prec UMINUS { CallFunc("!", [$2]) }
      | LP expr RP  { $2 }
      ;

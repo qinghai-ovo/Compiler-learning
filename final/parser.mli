@@ -33,7 +33,6 @@ type token =
   | MINUS
   | TIMES
   | DIV
-  | MOD
   | LB
   | RB
   | LS
@@ -45,6 +44,8 @@ type token =
   | COMMA
   | TYPE
   | VOID
+  | MOD
+  | POWER
 
 val prog :
   (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> Ast.stmt

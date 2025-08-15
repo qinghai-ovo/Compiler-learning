@@ -131,6 +131,9 @@ and type_exp ast env =
                (check_int (type_exp left env); check_int(type_exp right env); INT)
           | CallFunc ("/", [left; right]) -> 
                (check_int (type_exp left env); check_int(type_exp right env); INT)
+          (*Prob6: add check for power*)
+          | CallFunc ("^", [left; right]) -> 
+               (check_int (type_exp left env); check_int(type_exp right env); INT)
           | CallFunc ("!", [arg]) -> 
                (check_int (type_exp arg env); INT)
           | CallFunc (s, el) -> 

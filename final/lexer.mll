@@ -33,6 +33,7 @@ rule lexer = parse
 | '*'                     { TIMES }
 | '/'                     { DIV }
 | '%'                     { MOD } (* prob3: ADD MOD*)
+| '^'                     { POWER } (* prob3: ADD POWER*)
 | '{'                     { LB  }
 | '}'                     { RB  }
 | '['                     { LS }
