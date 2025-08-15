@@ -1,0 +1,6 @@
+*.out
+*.cmi
+*.cmo
+*.pdf
+tms.s
+simc
