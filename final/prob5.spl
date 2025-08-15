@@ -1,0 +1,8 @@
+{
+        int x = 5;
+        sprint ("x = ");
+        iprint (x);
+        sprint ("\n");
+}
+
+

@@ -15,7 +15,7 @@ let main () =
              (* アセンブラとリンカの呼出し *)
              let _ = Unix.system "gcc tmp.s" in ()    
     with
-    | Parsing.Parse_error ->
+    | Parsing.Parse_error -> (*prob 2: print error line and token pos*)
             let pos = Lexing.lexeme_start_p lexbuf in
             let line_num = string_of_int pos.Lexing.pos_lnum in
             let token = Lexing.lexeme lexbuf in

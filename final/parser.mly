@@ -9,13 +9,13 @@ open Ast
 %token <int> NUM
 %token <string> STR ID
 %token INT IF WHILE SPRINT IPRINT SCAN EQ NEQ GT LT GE LE ELSE RETURN NEW
-%token PLUS MINUS TIMES DIV LB RB LS RS LP RP ASSIGN SEMI COMMA TYPE VOID
+%token PLUS MINUS TIMES DIV MOD LB RB LS RS LP RP ASSIGN SEMI COMMA TYPE VOID (* prob3: ADD MOD*)
 %type <Ast.stmt> prog
 
 
 %nonassoc GT LT EQ NEQ GE LE
 %left PLUS MINUS         /* lowest precedence */
-%left TIMES DIV         /* medium precedence */
+%left TIMES DIV MOD      /* medium precedence */
 %nonassoc UMINUS      /* highest precedence */
 
 
@@ -35,7 +35,8 @@ decs : decs dec { $1@$2 }
      |          { [] }
      ;
 
-dec  : ty ids SEMI   { List.map (fun x -> VarDec ($1,x)) $2 }
+dec  : ty ids SEMI   { List.map (fun x -> VarDec ($1,x, None)) $2 } (*prob4: add None*)
+     | ty ID ASSIGN expr SEMI { [VarDec ($1, $2, Some $4)] } (* prob4: add rule*)
      | TYPE ID ASSIGN ty SEMI { [TypeDec ($2,$4)] }
      | ty ID LP fargs_opt RP block  { [FuncDec($2, $4, $1, $6)] }
      | VOID ID LP fargs_opt RP block  { [FuncDec($2, $4, VoidTyp, $6)] }
@@ -92,6 +93,7 @@ expr : NUM { IntExp $1  }
      | expr MINUS expr { CallFunc ("-", [$1; $3]) }
      | expr TIMES expr { CallFunc ("*", [$1; $3]) }
      | expr DIV expr { CallFunc ("/", [$1; $3]) }
+     | expr MOD expr { CallFunc ("-", [$1; CallFunc ("*", [CallFunc ("/", [$1; $3]); $3])])} (* prob3:expr mod*)
      | MINUS expr %prec UMINUS { CallFunc("!", [$2]) }
      | LP expr RP  { $2 }
      ;

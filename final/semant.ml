@@ -34,7 +34,7 @@ let rec check_redecl decs tl vl =
          [] -> ()
        | FuncDec (s,_,_,_)::rest -> if List.mem s vl then raise (SymErr s)
                                     else check_redecl rest tl (s::vl) 
-       | VarDec (_,s)::rest -> if List.mem s vl then raise (SymErr s)
+       | VarDec (_,s,_)::rest -> if List.mem s vl then raise (SymErr s)(*prob5*)
                                else check_redecl rest tl (s::vl) 
        | TypeDec (s,_)::rest -> if List.mem s tl then raise (SymErr s)
                                 else check_redecl rest (s::tl) vl 
@@ -54,14 +54,27 @@ let rec type_dec ast (nest,addr) tenv env =
       (* 関数定義の処理 *)
       FuncDec (s, l, rlt, Block (dl,_)) -> 
          (* 関数名の記号表への登録 *)
-         check_redecl ((List.map (fun (t,s) -> VarDec (t,s)) l) @ dl) [] [];
+         check_redecl ((List.map (fun (t,s) -> VarDec (t,s,None)) l) @ dl) [] [];
          let env' = update s (FunEntry 
                                  {formals= 
                                     List.map (fun (typ,_) -> create_ty typ tenv) l; 
                                     result=create_ty rlt tenv; level=nest+1}) env in (tenv, env', addr)
-    (* 変数宣言の処理 *)
-    | VarDec (t,s) -> (tenv, 
-              update s (VarEntry {ty= create_ty t tenv; offset=addr-8; level=nest}) env, addr-8)
+    (* 変数宣言の処理 *)(*prob5*) 
+    | VarDec (t,s,e_opt) ->
+          (*check the data type*)
+          let ty = create_ty t tenv in
+          (*if there is initialize*)
+               (match e_opt with
+               | None -> () (* no initialize *)
+               | Some e ->
+               (* check e`s type*)
+               let ty' = type_exp e env in
+               (* check if type is same *)
+               if actual_ty ty != actual_ty ty' then
+               raise (TypeErr ("変数の型と式の型が違い " ^ s))
+               );
+          (tenv, 
+               update s (VarEntry {ty= create_ty t tenv; offset=addr-8; level=nest}) env, addr-8)
     (* 型宣言の処理 *)
     | TypeDec (s,t) -> let tenv' = update s (NAME (s,ref None)) tenv in (tenv', env, addr)
     | _ -> raise (Err "internal error")

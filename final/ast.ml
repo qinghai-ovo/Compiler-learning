@@ -13,7 +13,7 @@ and exp = VarExp of var | StrExp of string | IntExp of int
         | CallFunc of id * (exp list)
 and dec = FuncDec of id * ((typ*id) list) * typ * stmt
         | TypeDec of id * typ
-        | VarDec of typ * id
+        | VarDec of typ * id * exp option (*prob5: add * exp option*)
 and typ = NameTyp of string
         | ArrayTyp of int * typ
         | IntTyp

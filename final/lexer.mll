@@ -32,6 +32,7 @@ rule lexer = parse
 | '-'                     { MINUS }
 | '*'                     { TIMES }
 | '/'                     { DIV }
+| '%'                     { MOD } (* prob3: ADD MOD*)
 | '{'                     { LB  }
 | '}'                     { RB  }
 | '['                     { LS }
@@ -42,6 +43,6 @@ rule lexer = parse
 | ';'                     { SEMI }
 | [' ' '\t']              { lexer lexbuf }(* eat up whitespace & ignore \n *) 
 | '\n'                    { Lexing.new_line lexbuf; lexer lexbuf } (* update line number with \n *)
-| "//" [^'\n']*           { lexer lexbuf }(* handle single-line comments *)
+| "//" [^'\n']*           { lexer lexbuf }(* prob1: handle single-line comments *)
 | eof                     { raise End_of_file }
 | _                       { raise No_such_symbol }

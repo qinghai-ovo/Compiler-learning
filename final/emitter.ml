@@ -52,7 +52,17 @@ let rec trans_dec ast nest tenv env = match ast with
                  ^ code                  (* 本体コード *)
                  ^ epilogue              (* エピローグ *)
    (* 変数宣言の処理 *)
- | VarDec (t,s) -> ()
+ | VarDec (t,s,e_opt) ->(*prob 5*)
+    (match e_opt with
+      None -> () (* no initalize: *)
+    | Some e -> (* initalize *)
+        let code = 
+          trans_exp e nest env (* calculate exp and push res to stack *)
+          ^ trans_var (Var s) nest env (* load addres of val to %rax  *)
+          ^ "\tpopq (%rax)\n" (* add stack`s top val to %rax  *)
+        in 
+        output := !output ^ code (*add Code to output*)
+    )
    (* 型宣言の処理 *)
  | TypeDec (s,t) -> 
       let entry = tenv s in
@@ -118,17 +128,27 @@ and trans_stmt ast nest tenv env =
                                ^  sprintf "\taddq $%d, %%rsp\n" ((List.length el + 1 + 1) / 2 * 2 * 8) 
                             | _ -> raise (No_such_symbol s)) 
                   (* ブロックのコード：文を表すブロックは，関数定義を無視する．*)
+                  (*Porb5 : change the code order*)
                   | Block (dl, sl) -> 
                        (* ブロック内宣言の処理 *)
                        let (tenv',env',addr') = type_decs dl nest tenv env in
                              List.iter (fun d -> trans_dec d nest tenv' env') dl;
                              (* フレームの拡張 *)
                              let ex_frame = sprintf "\tsubq $%d, %%rsp\n" ((-addr'+16)/16*16) in
-                                  (* 本体（文列）のコード生成 *)
-                                  let code = List.fold_left 
-                                       (fun code ast -> (code ^ trans_stmt ast nest tenv' env')) "" sl
+                             (*add init_code*)
+                             let init_code = List.fold_left (fun acc d ->
+                                acc ^ match d with
+                                | VarDec (_, s, Some e) ->
+                                    trans_exp e nest env'
+                                    ^ trans_var (Var s) nest env'
+                                    ^ "\tpopq (%rax)\n"
+                                | _ -> "" 
+                              ) "" dl in
+                              (* 本体（文列）のコード生成 *)
+                              let stmt_code = List.fold_left 
+                                    (fun code ast -> (code ^ trans_stmt ast nest tenv' env')) "" sl
                                   (* 局所変数分のフレーム拡張の付加 *)
-                                  in ex_frame ^ code
+                                  in ex_frame ^ init_code ^ stmt_code
                   (* elseなしif文のコード *)
                   | If (e,s,None) -> let (condCode,l) = trans_cond e nest env in
                                                   condCode

@@ -33,6 +33,7 @@ type token =
   | MINUS
   | TIMES
   | DIV
+  | MOD
   | LB
   | RB
   | LS
